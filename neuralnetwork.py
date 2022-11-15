@@ -27,7 +27,7 @@ colors = fit.colors
 
 
 #%%
-folder = 'G:\Shared drives\MST Supremo\FTH\Setup FBK-UNITN\\neural network\\Noise 0.1 30 min 0.1-1 nM'
+folder = 'G:\Shared drives\MST Supremo\FTH\Setup FBK-UNITN\\neural network\\Noise 0.01 30 min 0.1-1 nM dt=0.0001'
 # folder = 'G:\Shared drives\MST Supremo\FTH\Setup FBK-UNITN\data\signal-reference\\2022-06-16-24, set of 14 rings\\same L same number files'
 all_file_names = os.listdir(folder)
 
@@ -178,27 +178,26 @@ plt.pause(0.1)
 # %%
 class NN_Class(nn.Module):
     
-    def __init__(self, Ni=Npoints_curves_input):
+    def __init__(self, Ni=Npoints_curves_input, Nh1=9, Nh2=3, Nh3=3, No=1):
 
         super().__init__()
         
         print('Network initialized')
-        self.values = [Ni, 120, 27, 9, 4]
-        self.out = nn.Linear(in_features=self.values[-1], out_features=1)
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(in_features=Ni, out_features=Nh1, bias=True) #`y = xA^T + b
+        self.fc2 = nn.Linear(in_features=Nh1, out_features=Nh2, bias=True)
+        # self.fc3 = nn.Linear(in_features=Nh2, out_features=Nh3, bias=True)
+        self.out = nn.Linear(in_features=Nh1, out_features=No)
         self.act = nn.ReLU() #rectified linear unit function
-        self.functions = []
-        self.last_value = self.values[0]
-        for node in self.values[1:]:
-            print(f"self.act(nn.Linear(in_features={self.last_value}, out_features={node}, bias=True)(activated_data))")
-            self.functions.append(nn.Linear(in_features=self.last_value, out_features=node, bias=True))
-            self.last_value = node
+    
 
-
-    def forward(self, shifts_data):
-        activated_data = self.act(shifts_data)
-        for function in self.functions:
-            activated_data = self.act(function(activated_data))
-        x = self.out(activated_data)
+    def forward(self, x):
+        x = x #self.flatten(x)
+        x = self.act(x)
+        x = self.act(self.fc1(x))
+        # x = self.act(self.fc2(x))
+        # x = self.act(self.fc3(x))
+        x = self.out(x)
         return x
 
 # ### Define train dataloader
