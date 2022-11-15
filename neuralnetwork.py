@@ -178,13 +178,13 @@ plt.pause(0.1)
 # %%
 class NN_Class(nn.Module):
     
-    def __init__(self, Ni=Npoints_curves_input, Nh1=27, Nh2=3, Nh3=3, No=1):
+    def __init__(self, Ni=Npoints_curves_input):
 
         super().__init__()
         
         print('Network initialized')
-        self.values = [Npoints_curves_input, 27, 9, 3]
-        self.out = nn.Linear(in_features=Nh2, out_features=No)
+        self.values = [Ni, 120, 27, 9, 4]
+        self.out = nn.Linear(in_features=self.values[-1], out_features=1)
         self.act = nn.ReLU() #rectified linear unit function
         self.functions = []
         self.last_value = self.values[0]
@@ -198,7 +198,7 @@ class NN_Class(nn.Module):
         activated_data = self.act(shifts_data)
         for function in self.functions:
             activated_data = self.act(function(activated_data))
-        x = nn.Linear(in_features=self.values[-1], out_features=1)(activated_data)
+        x = self.out(activated_data)
         return x
 
 # ### Define train dataloader
